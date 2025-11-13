@@ -172,11 +172,3 @@ Status: Aprovado
 | Exceções | Erros de processo e falhas |
 | Static | Contador de produtos |
 | Pacotes | Organização modular |
-
----
-
-## 🧩 **Próximos Passos**
-1. Criar o **diagrama UML**.
-2. Implementar o **código base**.
-3. Adicionar simulação e relatórios.
-4. Apresentar destacando conceitos de POO + Engenharia de Produção.
