@@ -16,7 +16,8 @@ public class LinhaProducao {
             try {
                 m.processar(p);
             } catch (maquinaQuebradaException e) {
-                System.out.println("Erro: " + e.getMessage());
+                System.out.println("Erro na linha: " + e.getMessage());
+                p.setAprovado(false);
                 break;
             }
         }

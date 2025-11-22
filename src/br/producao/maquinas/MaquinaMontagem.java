@@ -1,21 +1,21 @@
 package br.producao.maquinas;
 
 import br.producao.produtos.Produto;
-import br.producao.excecoes.maquinaQuebradaException;
 
-public class MaquinaMontagem extends Maquina implements Runnable{
+public class MaquinaMontagem extends Maquina {
 
     public MaquinaMontagem(String id, int tempoProcesso) {
         super(id, tempoProcesso);
     }
 
     @Override
-    public void processar(Produto p) throws maquinaQuebradaException {
-
+    public void processar(Produto p) {
+        System.out.println("[Montagem] A montar: " + p.getNome());
+        try {
+            Thread.sleep(tempoProcesso * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("s[Montagem] Finalizado: " + p.getNome());
     }
-
-    public void run(){
-
-    }
-
 }
