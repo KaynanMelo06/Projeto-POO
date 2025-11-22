@@ -1,3 +1,4 @@
+
 # ⚙️ **Projeto: Simulador de Linha de Produção**
 🧠 *Integra Engenharia de Produção e Computação usando Programação Orientada a Objetos (Java)*
 
@@ -12,41 +13,44 @@ O projeto demonstra conceitos fundamentais de **Engenharia de Produção** (flux
 
 ## 🏭 **Conceito de Engenharia de Produção Aplicado**
 - Fluxo produtivo e sequenciamento de operações
-- Gargalos e eficiência da linha
+- Simulação de falhas mecânicas e manutenção
 - Controle de qualidade e rejeição de peças
-- Registro e análise de desempenho
+- Registro e análise de desempenho (Logs)
 
 ---
 
 ## 💻 **Conceitos de Programação Utilizados**
 ✅ Classes e Objetos  
 ✅ Herança e Polimorfismo  
-✅ Interfaces  
+✅ Interfaces (`Registravel`)  
 ✅ Pacotes  
-✅ Modificadores de acesso  
+✅ Modificadores de acesso e Encapsulamento  
 ✅ Construtores  
 ✅ Atributos e métodos `static`  
-✅ Arrays  
-✅ Threads  
-✅ Exceções personalizadas  
-✅ Leitura e escrita de arquivos
+✅ Coleções e Arrays  
+✅ Threads
+✅ **Java NIO (Path, Files)** para I/O moderno  
+✅ Exceções personalizadas (`RuntimeException`)
 
 ---
 
 ## 🧩 **Estrutura de Pacotes**
-```
-br.producao.maquinas
-br.producao.produtos
-br.producao.simulacao
-br.producao.arquivos
-br.producao.excecoes
-```
+```text
+br.producao.maquinas   -> Lógica das máquinas (Corte, Montagem, Inspeção)
+br.producao.produtos   -> Definição do produto e gravação de arquivo
+br.producao.simulacao  -> Controle do fluxo de produção (Simulador e Linha)
+br.producao.arquivos   -> Leitura de configurações externas
+br.producao.excecoes   -> Erros personalizados do sistema
+````
 
----
+-----
 
 ## 🧱 **Principais Classes e Interfaces**
 
 ### 🏗️ **Classe Abstrata `Maquina`**
+
+Base para todas as máquinas da fábrica.
+
 ```java
 public abstract class Maquina {
     protected String id;
@@ -57,118 +61,124 @@ public abstract class Maquina {
         this.tempoProcesso = tempoProcesso;
     }
 
-    public abstract void processar(Produto p) throws MaquinaQuebradaException;
+    public abstract void processar(Produto p) throws maquinaQuebradaException;
 }
 ```
 
-### ⚙️ **Subclasses**
-- `MaquinaCorte`
-- `MaquinaMontagem`
-- `MaquinaInspecao`
+### ⚙️ **Subclasses de Máquina**
 
-Cada uma implementa `processar()` de forma diferente (polimorfismo).
+  - `MaquinaCorte`: Simula o corte e possui chance de falha mecânica.
+  - `MaquinaMontagem`: Realiza a montagem das peças.
+  - `MaquinaInspecao`: Verifica a qualidade e pode rejeitar o produto (10% de chance).
 
----
+Cada uma implementa o método `processar()` de forma polimórfica.
+
+-----
 
 ### 📦 **Classe `Produto`**
+
+Implementa a lógica de status e gravação usando **Java NIO**.
+
 ```java
 public class Produto implements Registravel {
-    private static int contador = 0;
-    private int id;
-    private String nome;
-    private boolean aprovado;
-
-    public Produto(String nome) {
-        this.id = ++contador;
-        this.nome = nome;
-        this.aprovado = true;
-    }
+    // ... atributos ...
 
     @Override
     public void registrarEmArquivo() {
-        // escreve dados do produto em arquivo
+        Path caminho = Paths.get("relatorio_producao.txt");
+        // Usa Files.writeString com opção APPEND para criar log histórico
+        Files.writeString(caminho, conteudo, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 }
 ```
 
----
+-----
 
-### 🧾 **Interface `Registravel`**
+### 🧠 **Classes de Simulação**
+
+#### `LinhaProducao`
+
+Gerencia a passagem do produto pelas etapas e trata falhas.
+
 ```java
-public interface Registravel {
-    void registrarEmArquivo();
-}
-```
-
----
-
-### 🧠 **Classe `LinhaProducao`**
-```java
-public class LinhaProducao {
-    private Maquina[] etapas;
-    
-    public LinhaProducao(Maquina[] etapas) {
-        this.etapas = etapas;
-    }
-
-    public void iniciar(Produto p) {
-        for (Maquina m : etapas) {
-            try {
-                m.processar(p);
-            } catch (MaquinaQuebradaException e) {
-                System.out.println("Erro: " + e.getMessage());
-                break;
-            }
+public void iniciar(Produto p) {
+    for (Maquina m : etapas) {
+        try {
+            m.processar(p);
+        } catch (maquinaQuebradaException e) {
+            System.out.println("Erro: " + e.getMessage());
+            p.setAprovado(false); // Reprova automaticamente se a máquina quebrar
+            break; 
         }
     }
 }
 ```
 
----
+#### `Simulador`
 
-### ⚡ **Threads**
-Cada máquina pode rodar em paralelo:
+Classe auxiliar estática que encapsula a criação do produto e o início da linha, facilitando o uso em Threads.
+
+-----
+
+### ⚡ **Threads e Paralelismo**
+
+Diferente da abordagem clássica de implementar `Runnable` nas máquinas, este projeto utiliza **Lambdas** no `Main` para disparar processos de fabricação independentes para cada produto.
+
 ```java
-public class MaquinaCorte extends Maquina implements Runnable {
-    public void run() {
-        // simula tempo de operação
+// Main.java
+new Thread(() -> Simulador.iniciarProcesso("Carro Modelo A", etapas)).start();
+new Thread(() -> Simulador.iniciarProcesso("Carro Modelo B", etapas)).start();
+```
+
+-----
+
+### 📂 **Leitura de Configuração (Java NIO)**
+
+O sistema lê os tempos de processo de um arquivo externo `configuracao.txt` localizado na raiz do projeto.
+
+```java
+public class LeitorConfiguracao {
+    public static Map<String, Integer> ler(String caminho) {
+        // Usa Files.readAllLines e Streams/Split para processar "CHAVE=VALOR"
     }
 }
 ```
 
----
+-----
 
 ### ❗ **Exceções Personalizadas**
-```java
-public class MaquinaQuebradaException extends Exception {
-    public MaquinaQuebradaException(String msg) {
-        super(msg);
-    }
-}
+
+  - `maquinaQuebradaException`: Lançada quando ocorre uma falha mecânica na `MaquinaCorte`.
+  - `ConfiguracaoNaoEncontradaException`: Lançada se o arquivo `configuracao.txt` não for encontrado (Erro Crítico).
+
+Ambas estendem `RuntimeException` para parar fluxos específicos quando necessário.
+
+-----
+
+## 📊 **Exemplo de Saída (Console)**
+
+```text
+=== SISTEMA DE PRODUÇÃO PARALELA ===
+
+>> Thread iniciada para: Carro Modelo A
+>> Thread iniciada para: Carro Modelo B
+[Corte] A cortar: Carro Modelo A
+[Corte] A cortar: Carro Modelo B
+[Corte] Finalizado: Carro Modelo A
+[Montagem] A montar: Carro Modelo A
+...
+[Inspeção] APROVADO: Carro Modelo A
+[Arquivo] Relatório gravado para: Carro Modelo A
 ```
 
----
+-----
 
-## 📊 **Exemplo de Saída**
+## 📝 **Formato do Relatório (Arquivo)**
+
+O arquivo `relatorio_producao.txt` é gerado automaticamente:
+
+```text
+Produto ID: 1 | Nome: Carro Modelo A | Status: APROVADO
+Produto ID: 2 | Nome: Carro Modelo B | Status: REJEITADO
+Produto ID: 3 | Nome: Carro Modelo C | Status: APROVADO
 ```
-=== RELATÓRIO DE PRODUÇÃO ===
-Produto: 001 - "Caixa de Engrenagem"
-Processado com sucesso!
-Tempo total: 12 segundos
-Status: Aprovado
-```
-
----
-
-## 🧭 **Resumo do Projeto**
-| Conceito | Aplicação |
-|-----------|------------|
-| Herança | Maquina → subclasses específicas |
-| Polimorfismo | `processar()` adaptado em cada máquina |
-| Interface | `Registravel` |
-| Arrays | Lista de máquinas na linha |
-| Threads | Simulação paralela |
-| Arquivos | Registro de produção |
-| Exceções | Erros de processo e falhas |
-| Static | Contador de produtos |
-| Pacotes | Organização modular |
