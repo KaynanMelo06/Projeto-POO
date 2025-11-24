@@ -1,4 +1,3 @@
-
 # ⚙️ **Projeto: Simulador de Linha de Produção**
 🧠 *Integra Engenharia de Produção e Computação usando Programação Orientada a Objetos (Java)*
 
@@ -12,77 +11,67 @@ O projeto demonstra conceitos fundamentais de **Engenharia de Produção** (flux
 ---
 
 ## 🏭 **Conceito de Engenharia de Produção Aplicado**
-- Fluxo produtivo e sequenciamento de operações
-- Simulação de falhas mecânicas e manutenção
-- Controle de qualidade e rejeição de peças
-- Registro e análise de desempenho (Logs)
+- Fluxo produtivo e sequenciamento de operações.
+- Simulação de falhas mecânicas e manutenção.
+- Controle de qualidade e rejeição de peças.
+- Registro e análise de desempenho (Logs).
 
 ---
 
 ## 💻 **Conceitos de Programação Utilizados**
 ✅ Classes e Objetos  
 ✅ Herança e Polimorfismo  
-✅ Interfaces (`Registravel`)  
+✅ Interfaces (`Registravel`, `Runnable`)  
 ✅ Pacotes  
 ✅ Modificadores de acesso e Encapsulamento  
 ✅ Construtores  
 ✅ Atributos e métodos `static`  
 ✅ Coleções e Arrays  
-✅ Threads
+✅ **Threads
 ✅ **Java NIO (Path, Files)** para I/O moderno  
 ✅ Exceções personalizadas (`RuntimeException`)
 
 ---
 
 ## 🧩 **Estrutura de Pacotes**
-```text
+```
 br.producao.maquinas   -> Lógica das máquinas (Corte, Montagem, Inspeção)
 br.producao.produtos   -> Definição do produto e gravação de arquivo
-br.producao.simulacao  -> Controle do fluxo de produção (Simulador e Linha)
+br.producao.simulacao  -> Controle do fluxo (LinhaProducao, Simulador, TarefaProducao)
 br.producao.arquivos   -> Leitura de configurações externas
 br.producao.excecoes   -> Erros personalizados do sistema
-````
+```
 
------
+---
+# 🧱 Principais Classes e Interfaces
 
-## 🧱 **Principais Classes e Interfaces**
+## 🏗️ Classe Abstrata `Maquina`
 
-### 🏗️ **Classe Abstrata `Maquina`**
+Base para todas as máquinas da fábrica. Define o contrato processar().
 
-Base para todas as máquinas da fábrica.
-
-```java
+```Java
 public abstract class Maquina {
     protected String id;
     protected int tempoProcesso;
-
-    public Maquina(String id, int tempoProcesso) {
-        this.id = id;
-        this.tempoProcesso = tempoProcesso;
-    }
-
+    // ...
     public abstract void processar(Produto p) throws maquinaQuebradaException;
 }
 ```
+## ⚙️ Subclasses de Máquina
 
-### ⚙️ **Subclasses de Máquina**
+    MaquinaCorte: Simula o corte e possui chance de falha mecânica (Lâmina partir).
 
-  - `MaquinaCorte`: Simula o corte e possui chance de falha mecânica.
-  - `MaquinaMontagem`: Realiza a montagem das peças.
-  - `MaquinaInspecao`: Verifica a qualidade e pode rejeitar o produto (10% de chance).
+    MaquinaMontagem: Realiza a montagem das peças.
 
-Cada uma implementa o método `processar()` de forma polimórfica.
+    MaquinaInspecao: Verifica a qualidade e pode rejeitar o produto (10% de chance).
 
------
+## 📦 Classe Produto
 
-### 📦 **Classe `Produto`**
+Implementa a lógica de status e gravação usando Java NIO.
 
-Implementa a lógica de status e gravação usando **Java NIO**.
-
-```java
+```Java
 public class Produto implements Registravel {
-    // ... atributos ...
-
+    // ...
     @Override
     public void registrarEmArquivo() {
         Path caminho = Paths.get("relatorio_producao.txt");
@@ -91,73 +80,54 @@ public class Produto implements Registravel {
     }
 }
 ```
+## ⚡ Threads (Implementação Clássica)
 
------
+O projeto utiliza a interface Runnable para definir tarefas independentes, permitindo a fabricação paralela de vários produtos.
 
-### 🧠 **Classes de Simulação**
+    Classe TarefaProducao: Implementa Runnable e encapsula toda a lógica de fabricação de um único carro.
 
-#### `LinhaProducao`
+    No Main: Instanciamos objetos Thread passando as tarefas como parâmetro.
 
-Gerencia a passagem do produto pelas etapas e trata falhas.
 
-```java
-public void iniciar(Produto p) {
-    for (Maquina m : etapas) {
-        try {
-            m.processar(p);
-        } catch (maquinaQuebradaException e) {
-            System.out.println("Erro: " + e.getMessage());
-            p.setAprovado(false); // Reprova automaticamente se a máquina quebrar
-            break; 
-        }
-    }
-}
+```Java
+// Exemplo do código no Main
+TarefaProducao tarefa = new TarefaProducao("Carro A", etapas);
+Thread t1 = new Thread(tarefa);
+t1.start(); // Inicia a produção paralela
 ```
 
-#### `Simulador`
+## 🧠 Classes de Simulação
 
-Classe auxiliar estática que encapsula a criação do produto e o início da linha, facilitando o uso em Threads.
+LinhaProducao
 
------
+Gerencia a passagem do produto pelas etapas sequenciais (Corte -> Montagem -> Inspeção) e trata exceções de falha.
 
-### ⚡ **Threads e Paralelismo**
+Simulador
 
-Diferente da abordagem clássica de implementar `Runnable` nas máquinas, este projeto utiliza **Lambdas** no `Main` para disparar processos de fabricação independentes para cada produto.
+Classe utilitária que orquestra o início do processo e garante o registro final do produto.
 
-```java
-// Main.java
-new Thread(() -> Simulador.iniciarProcesso("Carro Modelo A", etapas)).start();
-new Thread(() -> Simulador.iniciarProcesso("Carro Modelo B", etapas)).start();
+## 📂 Leitura de Configuração (Java NIO)
+
+O sistema lê os tempos de processo de um arquivo externo configuracao.txt localizado na raiz do projeto. Isso permite ajustar a velocidade da fábrica sem recompilar o código.
+
+```Java
+// Exemplo de configuração
+CORTE=5
+MONTAGEM=3
+INSPECAO=2
+```
+## ❗ Exceções Personalizadas
+
+O sistema possui tratamento robusto de erros:
+
+    maquinaQuebradaException: Lançada quando ocorre uma falha mecânica (ex: na MaquinaCorte).
+
+    ConfiguracaoNaoEncontradaException: Prevista para erros críticos na leitura do arquivo de configuração.
+
+## 📊 Exemplo de Saída (Console)
+
 ```
 
------
-
-### 📂 **Leitura de Configuração (Java NIO)**
-
-O sistema lê os tempos de processo de um arquivo externo `configuracao.txt` localizado na raiz do projeto.
-
-```java
-public class LeitorConfiguracao {
-    public static Map<String, Integer> ler(String caminho) {
-        // Usa Files.readAllLines e Streams/Split para processar "CHAVE=VALOR"
-    }
-}
-```
-
------
-
-### ❗ **Exceções Personalizadas**
-
-  - `maquinaQuebradaException`: Lançada quando ocorre uma falha mecânica na `MaquinaCorte`.
-  - `ConfiguracaoNaoEncontradaException`: Lançada se o arquivo `configuracao.txt` não for encontrado (Erro Crítico).
-
-Ambas estendem `RuntimeException` para parar fluxos específicos quando necessário.
-
------
-
-## 📊 **Exemplo de Saída (Console)**
-
-```text
 === SISTEMA DE PRODUÇÃO PARALELA ===
 
 >> Thread iniciada para: Carro Modelo A
@@ -171,13 +141,11 @@ Ambas estendem `RuntimeException` para parar fluxos específicos quando necessá
 [Arquivo] Relatório gravado para: Carro Modelo A
 ```
 
------
+## 📝 Formato do Relatório (Arquivo)
 
-## 📝 **Formato do Relatório (Arquivo)**
+O arquivo relatorio_producao.txt é gerado automaticamente:
+```
 
-O arquivo `relatorio_producao.txt` é gerado automaticamente:
-
-```text
 Produto ID: 1 | Nome: Carro Modelo A | Status: APROVADO
 Produto ID: 2 | Nome: Carro Modelo B | Status: REJEITADO
 Produto ID: 3 | Nome: Carro Modelo C | Status: APROVADO

@@ -3,7 +3,6 @@ package br.producao.maquinas;
 import br.producao.produtos.Produto;
 import br.producao.excecoes.maquinaQuebradaException;
 
-// Removemos "implements Runnable" porque quem corre a Thread agora é a TarefaProducao
 public class MaquinaCorte extends Maquina {
 
     public MaquinaCorte(String id, int tempoProcesso) {

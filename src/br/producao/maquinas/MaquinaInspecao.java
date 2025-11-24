@@ -3,7 +3,7 @@ package br.producao.maquinas;
 import br.producao.produtos.Produto;
 import br.producao.excecoes.maquinaQuebradaException;
 
-public class MaquinaInspecao extends Maquina implements Runnable{
+public class MaquinaInspecao extends Maquina{
 
     public MaquinaInspecao(String id, int tempoProcesso) {
         super(id, tempoProcesso);
@@ -27,9 +27,4 @@ public class MaquinaInspecao extends Maquina implements Runnable{
 
         System.out.println("[Inspecao] Finalizado: " + p.getNome());
     }
-
-    public void run(){
-
-    }
-
 }
