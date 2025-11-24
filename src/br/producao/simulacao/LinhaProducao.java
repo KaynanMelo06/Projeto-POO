@@ -12,7 +12,8 @@ public class LinhaProducao {
     }
 
     public void iniciar(Produto p) {
-        for (Maquina m : etapas) {
+        for (int i = 0; i < etapas.length; i++) {
+            Maquina m = etapas[i];
             try {
                 m.processar(p);
             } catch (maquinaQuebradaException e) {
