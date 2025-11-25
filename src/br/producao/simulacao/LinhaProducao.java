@@ -2,7 +2,7 @@ package br.producao.simulacao;
 
 import br.producao.maquinas.Maquina;
 import br.producao.produtos.Produto;
-import br.producao.excecoes.maquinaQuebradaException;
+import br.producao.excecoes.MaquinaQuebradaException;
 
 public class LinhaProducao {
     private Maquina[] etapas;
@@ -16,7 +16,7 @@ public class LinhaProducao {
             Maquina m = etapas[i];
             try {
                 m.processar(p);
-            } catch (maquinaQuebradaException e) {
+            } catch (MaquinaQuebradaException e) {
                 System.out.println("Erro na linha: " + e.getMessage());
                 p.setAprovado(false);
                 break;

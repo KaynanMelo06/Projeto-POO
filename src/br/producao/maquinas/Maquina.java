@@ -1,7 +1,7 @@
 package br.producao.maquinas;
 
 import br.producao.produtos.Produto;
-import br.producao.excecoes.maquinaQuebradaException;
+import br.producao.excecoes.MaquinaQuebradaException;
 
 public abstract class Maquina {
     protected String id;
@@ -12,5 +12,5 @@ public abstract class Maquina {
         this.tempoProcesso = tempoProcesso;
     }
 
-    public abstract void processar(Produto p) throws maquinaQuebradaException;
+    public abstract void processar(Produto p) throws MaquinaQuebradaException;
 }

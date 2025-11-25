@@ -1,7 +1,7 @@
 package br.producao.maquinas;
 
 import br.producao.produtos.Produto;
-import br.producao.excecoes.maquinaQuebradaException;
+import br.producao.excecoes.MaquinaQuebradaException;
 
 public class MaquinaInspecao extends Maquina{
 
@@ -10,15 +10,17 @@ public class MaquinaInspecao extends Maquina{
     }
 
     @Override
-    public void processar(Produto p) throws maquinaQuebradaException {
+    public void processar(Produto p) throws MaquinaQuebradaException {
         System.out.println("[Inspecao] Inspecionar: " + p.getNome());
 
         try {
             // Simula o tempo de processo (conversão de segundos para milissegundos)
             Thread.sleep(tempoProcesso * 1000);
 
-            if (Math.random() < 0.05) {
-                throw new maquinaQuebradaException("Erro encontrado na inspecao " + p.getNome() + "!");
+            // Simulação de Falha Mecânica (10% de chance)
+            // Se falhar, lança a exceção que será capturada pela LinhaProducao
+            if (Math.random() < 0.1) {
+                throw new MaquinaQuebradaException("Erro encontrado na inspecao " + p.getNome() + "!");
             }
 
         } catch (InterruptedException e) {
