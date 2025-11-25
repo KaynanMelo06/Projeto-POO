@@ -1,5 +1,6 @@
 package br.producao.arquivos;
 
+import br.producao.excecoes.ConfiguracaoNaoEncontradaException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ public class LeitorConfiguracao {
                 }
             }
         } catch (Exception e) {
-            System.out.println("! Aviso: Configuração não encontrada ou inválida. Usando padrões.");
+            throw new ConfiguracaoNaoEncontradaException("ERRO CRÍTICO: O arquivo '" + caminhoArquivo + "' não foi encontrado!");
         }
         return map;
     }
